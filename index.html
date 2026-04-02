@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inner Primate Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Kanit', sans-serif; background-color: #f3f4f1; }
+        .quiz-card { transition: all 0.3s ease; }
+        .btn-choice:hover { transform: translateY(-2px); background-color: #e2e8f0; }
+        #result-card { background: white; width: 350px; padding: 20px; border-radius: 20px; text-align: center; margin: 0 auto; }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div id="app" class="max-w-md w-full bg-white rounded-3xl shadow-xl p-8 quiz-card">
+        <div id="start-screen" class="text-center">
+            <div class="text-6xl mb-6">🐒</div>
+            <h1 class="text-2xl font-bold text-gray-800 mb-4">ค้นหาไพรเมตในตัวคุณ</h1>
+            <p class="text-gray-600 mb-8">ค้นหาตัวตนที่ซ่อนอยู่ผ่านพฤติกรรมธรรมชาติของคุณ ตามหลักวานรวิทยา</p>
+            <button onclick="startQuiz()" class="w-full bg-green-600 text-white py-4 rounded-2xl font-semibold shadow-lg hover:bg-green-700 transition">เริ่มสำรวจตัวเอง</button>
+        </div>
+
+        <div id="quiz-screen" class="hidden">
+            <div class="mb-4 text-sm text-gray-400 font-medium" id="progress">คำถามที่ 1</div>
+            <h2 id="question-text" class="text-xl font-semibold text-gray-800 mb-6">คำถามจะปรากฏตรงนี้</h2>
+            <div id="choices" class="space-y-3">
+                </div>
+        </div>
+
+        <div id="result-screen" class="hidden text-center">
+            <div id="capture-area">
+                <div id="result-card" class="border-4 border-green-100">
+                    <div class="text-sm text-green-600 font-bold mb-2 tracking-widest">RESULT</div>
+                    <div id="species-emoji" class="text-6xl mb-4">🙊</div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2" id="species-name">ชื่อสายพันธุ์</h2>
+                    <p id="species-desc" class="text-gray-600 text-sm leading-relaxed mb-4">คำอธิบายพฤติกรรม...</p>
+                    <div class="bg-gray-50 p-3 rounded-xl text-xs text-gray-500 italic">
+                        "สะท้อนตัวตนของคุณผ่านพฤติกรรมไพรเมต"
+                    </div>
+                </div>
+            </div>
+            <button onclick="saveImage()" class="mt-8 w-full bg-blue-500 text-white py-3 rounded-xl font-medium shadow-md hover:bg-blue-600 mb-3">💾 บันทึกรูปภาพ</button>
+            <button onclick="location.reload()" class="w-full text-gray-400 text-sm">ทำแบบทดสอบอีกครั้ง</button>
+        </div>
+    </div>
+
+    <script>
+        // ข้อมูล Logic จาก Excel
+        const quizData = {
+            "start": {
+                text: "ช่วงเวลาไหนที่คุณรู้สึกมีพลังมากที่สุด?",
+                choices: [
+                    { text: "เวลากลางคืน (Nighttime)", next: "1-N" },
+                    { text: "เวลากลางวัน (Daytime)", next: "1-D" }
+                ]
+            },
+            "1-N": {
+                text: "สไตล์ของคุณเป็นแบบไหน?",
+                choices: [
+                    { text: "รวดเร็ว ฉับไว (Fast)", next: "1-N-F" },
+                    { text: "ช้าแต่มั่นคง (Slow)", next: "1-N-S" }
+                ]
+            },
+            "1-N-F": {
+                text: "คุณเป็นคนช่างพูด หรือ เงียบๆ?",
+                choices: [
+                    { text: "ช่างพูด (Talkative)", result: "Bushbaby" },
+                    { text: "เงียบๆ (Quiet)", next: "1-N-F-Q" }
+                ]
+            },
+            "1-N-F-Q": {
+                text: "คุณชอบทำอะไรมากกว่ากัน?",
+                choices: [
+                    { text: "ชอบสังเกตรายละเอียดรอบตัว", result: "Tarsier" },
+                    { text: "ชอบดมหรือสำรวจก่อนตัดสินใจ", result: "Mouse Lemur" }
+                ]
+            },
+            "1-N-S": {
+                text: "คุณเป็นคนสไตล์ไหนมากกว่ากัน?",
+                choices: [
+                    { text: "รักสันโดษ (Loner)", next: "1-N-S-L" },
+                    { text: "สายครอบครัว (Family)", result: "Owl Monkey" }
+                ]
+            },
+            "1-N-S-L": {
+                text: "คุณอยากให้คนอื่นมองคุณแบบไหน?",
+                choices: [
+                    { text: "น่ารัก อ่อนโยน เข้าถึงง่าย", result: "Slow Loris" },
+                    { text: "โดดเด่น มีสไตล์ ไม่ซ้ำใคร", result: "Aye-aye" }
+                ]
+            },
+            "1-D": {
+                text: "คุณชอบอยู่ในกลุ่มสังคมขนาดไหน?",
+                choices: [
+                    { text: "กลุ่มใหญ่ๆ เฮฮา", result: "Old World Monkey (รออัปเดต)" },
+                    { text: "กลุ่มเล็กๆ สบายใจกว่า", next: "1-D-S" }
+                ]
+            },
+            "1-D-S": {
+                text: "ในความสัมพันธ์ สไตล์คุณคือ?",
+                choices: [
+                    { text: "รักอิสระ มีพื้นที่ส่วนตัว", result: "Wild Spirit (รออัปเดต)" },
+                    { text: "คนมีคู่ ชอบใช้เวลากับแฟน", next: "1-D-S-P" }
+                ]
+            },
+            "1-D-S-P": {
+                text: "ถ้าเลือกสไตล์การแต่งตัวที่บอกความรู้สึก?",
+                choices: [
+                    { text: "โทนสีเอิร์ธโทน (Earthy)", result: "Titi Monkey" },
+                    { text: "โทนขาวดำ (Black & White)", result: "Indri" }
+                ]
+            }
+        };
+
+        const resultsDesc = {
+            "Bushbaby": "คุณคือสายกิจกรรม! รวดเร็ว ว่องไว และสื่อสารเก่งเหมือนกาลาโก",
+            "Tarsier": "คุณคือนักสังเกตการณ์ที่ยอดเยี่ยม รอบคอบ และมองเห็นในสิ่งที่คนอื่นมองข้าม",
+            "Mouse Lemur": "คุณตัวเล็กแต่ใจใหญ่ ชอบสำรวจ และมีความละเอียดอ่อนสูงมาก",
+            "Owl Monkey": "คุณคือหัวใจของครอบครัว อบอุ่น ซื่อสัตย์ และเป็นคู่แท้ที่หาได้ยาก",
+            "Slow Loris": "คุณมีเสน่ห์ที่นุ่มนวล ใครเห็นก็เอ็นดู แต่แฝงไปด้วยความแข็งแกร่งในตัว",
+            "Aye-aye": "คุณคือความยูนีคที่แท้จริง! แตกต่างอย่างมีสไตล์และเป็นตัวของตัวเองที่สุด",
+            "Titi Monkey": "คุณรักความสงบ เรียบง่าย และให้ความสำคัญกับความสัมพันธ์ที่แน่นแฟ้น",
+            "Indri": "คุณคือความมินิมอลที่ดูดี มีสไตล์ที่ชัดเจน และรักอิสระในแบบของตัวเอง"
+        };
+
+        let currentStep = "start";
+        let questionCount = 1;
+
+        function startQuiz() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const data = quizData[currentStep];
+            document.getElementById('progress').innerText = `คำถามที่ ${questionCount}`;
+            document.getElementById('question-text').innerText = data.text;
+            const choicesDiv = document.getElementById('choices');
+            choicesDiv.innerHTML = '';
+            
+            data.choices.forEach(choice => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-4 rounded-xl border-2 border-gray-100 btn-choice bg-white text-gray-700 font-medium transition";
+                btn.innerText = choice.text;
+                btn.onclick = () => handleChoice(choice);
+                choicesDiv.appendChild(btn);
+            });
+        }
+
+        function handleChoice(choice) {
+            if (choice.result) {
+                showResult(choice.result);
+            } else {
+                currentStep = choice.next;
+                questionCount++;
+                renderQuestion();
+            }
+        }
+
+        function showResult(species) {
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+            document.getElementById('species-name').innerText = species;
+            document.getElementById('species-desc').innerText = resultsDesc[species] || "คุณมีความเป็นเอกลักษณ์ในแบบไพรเมตสายพันธุ์พิเศษ!";
+        }
+
+        function saveImage() {
+            const area = document.getElementById('capture-area');
+            html2canvas(area, { backgroundColor: "#f3f4f1", scale: 2 }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `My-Inner-Primate-${Date.now()}.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+            });
+        }
+    </script>
+</body>
+</html>
