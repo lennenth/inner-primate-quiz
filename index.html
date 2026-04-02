@@ -3,169 +3,147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inner Primate Quiz</title>
+    <title>Your Inner Primate Quiz</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Kanit', sans-serif; background-color: #f7f7f2; }
-        .quiz-card { transition: all 0.3s ease; border-radius: 2rem; }
-        #result-card { background: white; width: 340px; padding: 30px; border-radius: 20px; text-align: center; margin: 0 auto; border: 2px solid #e5e7eb; }
-        .btn-choice { transition: all 0.2s; border: 2px solid #f1f5f9; text-align: left; padding: 1.25rem; border-radius: 1rem; width: 100%; background: white; color: #334155; font-weight: 500; }
-        .btn-choice:hover { border-color: #10b981; background-color: #f0fdf4; transform: translateY(-2px); }
+        body { font-family: 'Kanit', sans-serif; background-color: #f0f2f0; }
+        .quiz-card { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .btn-choice { 
+            transition: all 0.2s; 
+            border: 2px solid #e2e8f0; 
+            text-align: left; 
+            padding: 1.25rem; 
+            border-radius: 1.25rem; 
+            width: 100%; 
+            background: white; 
+            color: #1e293b;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+        .btn-choice:hover { 
+            border-color: #059669; 
+            background-color: #f0fdf4; 
+            transform: translateX(4px);
+        }
+        #result-card { 
+            background: white; 
+            width: 350px; 
+            padding: 40px 30px; 
+            border-radius: 30px; 
+            text-align: center; 
+            margin: 0 auto; 
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
 
-    <div id="app" class="max-w-md w-full bg-white shadow-2xl p-8 quiz-card">
+    <div id="app" class="max-w-md w-full bg-white rounded-[2.5rem] shadow-2xl p-10 quiz-card">
         <div id="start-screen" class="text-center">
-            <div class="text-6xl mb-6">🐒</div>
-            <h1 class="text-2xl font-bold text-gray-800 mb-4">Your Inner Primate</h1>
-            <p class="text-gray-500 mb-8 text-sm">ค้นหาชนิดของลิงที่ตรงกับพฤติกรรมของคุณ<br>(อ้างอิงข้อมูลตามผลการศึกษาในไฟล์)</p>
-            <button onclick="startQuiz()" class="w-full bg-emerald-600 text-white py-4 rounded-xl font-bold shadow-lg hover:bg-emerald-700 transition">เริ่มทำแบบทดสอบ</button>
+            <div class="text-7xl mb-8">🐒</div>
+            <h1 class="text-3xl font-bold text-gray-800 mb-4">Your Inner Primate</h1>
+            <p class="text-gray-500 mb-10">ค้นหาตัวตนของคุณผ่านพฤติกรรมไพรเมต<br>ตามข้อมูลวิจัยในไฟล์ Excel</p>
+            <button onclick="startQuiz()" class="w-full bg-emerald-600 text-white py-4 rounded-2xl font-bold text-lg shadow-lg hover:bg-emerald-700 transition-all hover:scale-[1.02]">เริ่มทำแบบทดสอบ</button>
         </div>
 
         <div id="quiz-screen" class="hidden">
-            <div class="text-xs font-bold text-emerald-600 uppercase tracking-widest mb-2" id="progress">Question</div>
-            <h2 id="question-text" class="text-xl font-semibold text-gray-800 mb-6 leading-tight"></h2>
-            <div id="choices" class="space-y-3"></div>
+            <div id="question-area">
+                <h2 id="question-text" class="text-2xl font-bold text-gray-800 mb-8 leading-tight"></h2>
+                <div id="choices" class="space-y-4"></div>
+            </div>
         </div>
 
         <div id="result-screen" class="hidden text-center">
-            <div id="capture-area" class="py-6 bg-[#f7f7f2]">
+            <div id="capture-area" class="py-10 bg-[#f0f2f0]">
                 <div id="result-card">
-                    <div class="text-[10px] font-bold text-emerald-600 tracking-[0.2em] mb-4 uppercase">Classification Result</div>
-                    <div id="species-emoji" class="text-6xl mb-4">🐵</div>
-                    <h2 class="text-2xl font-bold text-gray-800 mb-2" id="species-name"></h2>
-                    <div class="h-1 w-10 bg-emerald-500 mx-auto mb-4"></div>
-                    <p id="species-desc" class="text-gray-500 text-xs leading-relaxed"></p>
+                    <div class="text-[10px] font-black text-emerald-600 tracking-[0.4em] mb-6 uppercase">Primate ID Card</div>
+                    <div id="species-emoji" class="text-7xl mb-6">🐵</div>
+                    <h2 class="text-3xl font-bold text-gray-800 mb-3" id="species-name"></h2>
+                    <div class="h-1.5 w-12 bg-emerald-500 mx-auto mb-6 rounded-full"></div>
+                    <p class="text-gray-500 text-sm leading-relaxed px-4">พฤติกรรมของคุณสะท้อนเอกลักษณ์ของไพรเมตสายพันธุ์นี้ได้อย่างชัดเจน</p>
                 </div>
             </div>
-            <button onclick="saveImage()" class="mt-6 w-full bg-gray-900 text-white py-4 rounded-xl font-bold shadow-lg hover:bg-black transition">💾 บันทึกรูปภาพ</button>
-            <button onclick="location.reload()" class="mt-4 w-full text-gray-400 text-sm">ย้อนกลับไปหน้าแรก</button>
+            <button onclick="saveImage()" class="mt-8 w-full bg-slate-900 text-white py-4 rounded-2xl font-bold shadow-xl hover:bg-black transition-all">💾 บันทึกรูปผลลัพธ์</button>
+            <button onclick="location.reload()" class="mt-4 w-full text-gray-400 text-sm hover:text-emerald-600 transition">กลับไปหน้าแรก</button>
         </div>
     </div>
 
     <script>
-        // ข้อมูลที่ดึงมาจากไฟล์ Excel ของคุณเท่านั้น (Species ที่ไม่เป็น 0)
-        const quizData = {
-            "start": {
-                text: "When do you feel most energized?",
-                choices: [
-                    { text: "Nighttime", next: "1-N" },
-                    { text: "Daytime", next: "1-D" }
-                ]
-            },
-            "1-N": {
-                text: "Is your style more fast-moving or slow and steady?",
-                choices: [
-                    { text: "Fast", next: "1-N-F" },
-                    { text: "Slow", next: "1-N-S" }
-                ]
-            },
-            "1-N-F": {
-                text: "Are you more talkative or quiet?",
-                choices: [
-                    { text: "Talkative", result: "Bushbaby" },
-                    { text: "Quiet", next: "1-N-F-Q" }
-                ]
-            },
-            "1-N-F-Q": {
-                text: "What would you love to do?",
-                choices: [
-                    { text: "Look at little details around you", result: "Tarsier" },
-                    { text: "Smell stuff before you eat", result: "Mouse Lemur" }
-                ]
-            },
-            "1-N-S": {
-                text: "Do you feel more like a loner type, or a family type?",
-                choices: [
-                    { text: "Loner", next: "1-N-S-L" },
-                    { text: "Family", result: "Owl monkey" }
-                ]
-            },
-            "1-N-S-L": {
-                text: "How would you want people to perceive you?",
-                choices: [
-                    { text: "Cute and traditional — gentle in ways people easily accept", result: "Slow loris" },
-                    { text: "Unique and memorable — standing out even if not everyone gets me", result: "Aye-aye" }
-                ]
-            },
-            "1-D": {
-                text: "Do you feel more comfortable in small circles, or in large groups?",
-                choices: [
-                    { text: "Small group", next: "1-D-S" }
-                    // ตัด Big Group ออกเพราะในไฟล์ผลลัพธ์เป็น 0
-                ]
-            },
-            "1-D-S": {
-                text: "In close relationships, what’s your style?",
-                choices: [
-                    { text: "Partner, I love spending time with my partner", next: "1-D-S-P" }
-                    // ตัด Independent ออกเพราะในไฟล์ผลลัพธ์เป็น 0
-                ]
-            },
-            "1-D-S-P": {
-                text: "If your clothing style reflected your vibe, which would you choose?",
-                choices: [
-                    { text: "Earthy tones", result: "Titi monkey / Bamboo lemur" },
-                    { text: "Black and white", result: "Indri" }
-                ]
-            }
-        };
+        // ข้อมูล Logic อ้างอิงตามไฟล์ Excel เป๊ะๆ (ID และ Parent)
+        const rawData = [
+            { id: "1", parent: "0", q: "When do you feel most energized?", a: "Nighttime", species: "0", nextId: "1-N" },
+            { id: "1", parent: "0", q: "When do you feel most energized?", a: "Daytime", species: "0", nextId: "1-D" },
+            { id: "1-N", parent: "1", q: "Is your style more fast-moving or slow and steady?", a: "Fast", species: "0", nextId: "1-N-F" },
+            { id: "1-N", parent: "1", q: "Is your style more fast-moving or slow and steady?", a: "Slow", species: "0", nextId: "1-N-S" },
+            { id: "1-N-F", parent: "1-N", q: "Are you more talkative or quiet?", a: "Talkative", species: "Bushbaby", nextId: "" },
+            { id: "1-N-F", parent: "1-N", q: "Are you more talkative or quiet?", a: "Quiet", species: "0", nextId: "1-N-F-Q" },
+            { id: "1-N-F-Q", parent: "1-N-F", q: "What would you love to do?", a: "Look at little details around you", species: "Tarsier", nextId: "" },
+            { id: "1-N-F-Q", parent: "1-N-F", q: "What would you love to do?", a: "Smell stuff before you eat", species: "Mouse Lemur", nextId: "" },
+            { id: "1-N-S", parent: "1-N", q: "Do you feel more like a loner type, or a family type?", a: "Loner", species: "0", nextId: "1-N-S-L" },
+            { id: "1-N-S", parent: "1-N", q: "Do you feel more like a loner type, or a family type?", a: "Family", species: "Owl monkey", nextId: "" },
+            { id: "1-N-S-L", parent: "1-N-S", q: "How would you want people to perceive you?", a: "Cute and traditional — gentle in ways people easily accept", species: "Slow loris", nextId: "" },
+            { id: "1-N-S-L", parent: "1-N-S", q: "How would you want people to perceive you?", a: "Unique and memorable — standing out even if not everyone gets me", species: "Aye-aye", nextId: "" },
+            { id: "1-D", parent: "1", q: "Do you feel more comfortable in small circles, or in large groups?", a: "Small group", species: "0", nextId: "1-D-S" },
+            { id: "1-D", parent: "1", q: "Do you feel more comfortable in small circles, or in large groups?", a: "Big group", species: "0", nextId: "1-D-B" },
+            { id: "1-D-S", parent: "1-D", q: "In close relationships, what’s your style?", a: "Independent - I like my own space.", species: "0", nextId: "1-D-S-I" },
+            { id: "1-D-S", parent: "1-D", q: "In close relationships, what’s your style?", a: "Pertner, I love spending time with my partner", species: "0", nextId: "1-D-S-P" },
+            { id: "1-D-S-P", parent: "1-D-S", q: "If your clothing style reflected your vibe, which would you choose?", a: "Earthy tones", species: "Titi monkey / Bamboo lemur", nextId: "" },
+            { id: "1-D-S-P", parent: "1-D-S", q: "If your clothing style reflected your vibe, which would you choose?", a: "Black and white", species: "Indri", nextId: "" }
+        ];
 
-        const resultDetails = {
-            "Bushbaby": "ลักษณะพฤติกรรมของคุณตรงกับ 'Bushbaby' ตามฐานข้อมูลพฤติกรรมไพรเมต",
-            "Tarsier": "ลักษณะพฤติกรรมของคุณตรงกับ 'Tarsier' ตามฐานข้อมูลพฤติกรรมไพรเมต",
-            "Mouse Lemur": "ลักษณะพฤติกรรมของคุณตรงกับ 'Mouse Lemur' ตามฐานข้อมูลพฤติกรรมไพรเมต",
-            "Owl monkey": "ลักษณะพฤติกรรมของคุณตรงกับ 'Owl monkey' ตามฐานข้อมูลพฤติกรรมไพรเมต",
-            "Slow loris": "ลักษณะพฤติกรรมของคุณตรงกับ 'Slow loris' ตามฐานข้อมูลพฤติกรรมไพรเมต",
-            "Aye-aye": "ลักษณะพฤติกรรมของคุณตรงกับ 'Aye-aye' ตามฐานข้อมูลพฤติกรรมไพรเมต",
-            "Titi monkey / Bamboo lemur": "ลักษณะพฤติกรรมของคุณตรงกับ 'Titi monkey' หรือ 'Bamboo lemur' ตามฐานข้อมูลพฤติกรรมไพรเมต",
-            "Indri": "ลักษณะพฤติกรรมของคุณตรงกับ 'Indri' ตามฐานข้อมูลพฤติกรรมไพรเมต"
-        };
-
-        let currentStep = "start";
+        let currentId = "1";
 
         function startQuiz() {
             document.getElementById('start-screen').classList.add('hidden');
             document.getElementById('quiz-screen').classList.remove('hidden');
-            renderQuestion();
+            renderQuestion(currentId);
         }
 
-        function renderQuestion() {
-            const data = quizData[currentStep];
-            document.getElementById('question-text').innerText = data.text;
+        function renderQuestion(id) {
+            const choices = rawData.filter(item => item.id === id);
+            if (choices.length === 0) return;
+
+            document.getElementById('question-text').innerText = choices[0].q;
             const choicesDiv = document.getElementById('choices');
             choicesDiv.innerHTML = '';
             
-            data.choices.forEach(choice => {
+            choices.forEach(item => {
                 const btn = document.createElement('button');
                 btn.className = "btn-choice shadow-sm";
-                btn.innerText = choice.text;
+                btn.innerHTML = `<span>${item.a}</span><span class="ml-auto text-gray-300">→</span>`;
                 btn.onclick = () => {
-                    if (choice.result) showResult(choice.result);
-                    else {
-                        currentStep = choice.next;
-                        renderQuestion();
+                    if (item.species !== "0") {
+                        showResult(item.species);
+                    } else if (item.nextId !== "") {
+                        renderQuestion(item.nextId);
+                    } else {
+                        // กรณีที่ข้อมูลในไฟล์ระบุเป็น 0 และไม่มีไปต่อ
+                        alert("กำลังรวบรวมข้อมูลสายพันธุ์นี้เพิ่มเติมในอนาคต!");
                     }
                 };
                 choicesDiv.appendChild(btn);
             });
         }
 
-        function showResult(species) {
+        function showResult(name) {
             document.getElementById('quiz-screen').classList.add('hidden');
             document.getElementById('result-screen').classList.remove('hidden');
-            document.getElementById('species-name').innerText = species;
-            document.getElementById('species-desc').innerText = resultDetails[species];
+            document.getElementById('species-name').innerText = name;
+            
+            // ใส่ Emoji ตามชื่อลิง
+            const emojiMap = { "Bushbaby": "🐒", "Tarsier": "👁️", "Mouse Lemur": "🐭", "Owl monkey": "🦉", "Slow loris": "🍃", "Aye-aye": "🌙", "Indri": "🏁" };
+            document.getElementById('species-emoji').innerText = emojiMap[name] || "🐵";
         }
 
         function saveImage() {
             const area = document.getElementById('capture-area');
-            html2canvas(area, { backgroundColor: "#f7f7f2", scale: 3 }).then(canvas => {
+            html2canvas(area, { backgroundColor: "#f0f2f0", scale: 3 }).then(canvas => {
                 const link = document.createElement('a');
-                link.download = `Primate-Result-${Date.now()}.png`;
+                link.download = `Inner-Primate-${Date.now()}.png`;
                 link.href = canvas.toDataURL();
                 link.click();
             });
